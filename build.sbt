@@ -15,8 +15,6 @@ libraryDependencies ++= Seq(
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "test"
 )
 
-bintraySettings
-
 com.typesafe.sbt.SbtGit.versionWithGit
 
 
