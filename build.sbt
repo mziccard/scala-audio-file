@@ -1,4 +1,4 @@
-name := """audio-file"""
+name := """scala-audio-file"""
 
 organization := "me.mziccard"
 
