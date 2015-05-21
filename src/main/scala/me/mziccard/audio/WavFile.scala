@@ -286,7 +286,7 @@ class WavFile private () extends AudioFile {
    * @param numFramesToRead Number of frames to read
    * @return The number of frames read
    **/
-  def readNormalizedFrames(sampleBuffer : Array[Double], numFramesToRead : Int) : Int = {
+  override def readNormalizedFrames(sampleBuffer : Array[Double], numFramesToRead : Int) : Int = {
     return readNormalizedFrames(sampleBuffer, 0, numFramesToRead);
   }
 
@@ -297,14 +297,15 @@ class WavFile private () extends AudioFile {
    * @param numFramesToRead Number of frames to read
    * @return The number of frames read
    **/
-  def readNormalizedFrames(sampleBuffer : Array[Double], offset : Int, numFramesToRead : Int) : Int = {
+  override def readNormalizedFrames(sampleBuffer : Array[Double], offset : Int, numFramesToRead : Int) : Int = {
     var index = offset;
     for (f <- 0 until numFramesToRead) {
       if (frameCounter == numFrames) return f;
 
       for (c <- 0 until numChannels) {
-        //System.out.println("(" + signedToUnsigned + " + " + ((double) readSample()) + ")/"+((double) maxUnsignedPCMValue));
-        sampleBuffer(index) = math.abs(math.abs(readSample) - unsignedToSigned).toDouble / maxSignedPCMValue.toDouble;
+        val sample = readSample
+        //System.out.println("(" + math.abs(sample) + " - " + unsignedToSigned + ")/"+(maxSignedPCMValue.toDouble));
+        sampleBuffer(index) = math.abs(math.abs(sample) - unsignedToSigned).toDouble / maxSignedPCMValue.toDouble;
         index = index + 1;
       }
 
@@ -464,7 +465,7 @@ object WavFile {
       // Conversion required dividing by magnitude of max negative value
       wavFile.floatOffset = 0;
       wavFile.floatScale = 1 << (wavFile.validBits - 1);
-      wavFile.unsignedToSigned = 0x0F;
+      wavFile.unsignedToSigned = 0x0;
       wavFile.maxSignedPCMValue = (0x1 << (wavFile.validBits-1));
     }
     else {
