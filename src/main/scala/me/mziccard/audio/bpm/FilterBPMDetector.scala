@@ -82,12 +82,12 @@ class FilterBPMDetector private (
    * HashMap of theoretical tempos in the interval [90, 180]
    * and their frequency
    **/
-  var bpmHistogram = HashMap[Int, Int]();
+  var bpmHistogram = HashMap[Double, Int]();
 
   /**
    * The tempo in beats-per-minute computed for the track
    **/
-  var _bpm : Int = -1;
+  var _bpm : Double = -1.0;
 
   /**
    * Threshold over which a sampled value is consided a peak.
@@ -192,8 +192,7 @@ class FilterBPMDetector private (
     distanceHistogram.foreach(p => {
       val distance = p._1
       val distanceCount = p._2
-      var theoreticalTempo = 
-              (60 / (distance.toDouble / audioFile.sampleRate)).toInt
+      var theoreticalTempo = 60 / (distance.toDouble / audioFile.sampleRate)
 
       if (theoreticalTempo > 1) {
         while (theoreticalTempo < 90) 
@@ -218,7 +217,7 @@ class FilterBPMDetector private (
    * set.
    **/
   private def computeBpm() = {
-    var maxTempo = 0;
+    var maxTempo = 0.0;
     var maxCount = 0;
     bpmHistogram.foreach(p => {
       val tempo = p._1
@@ -238,7 +237,7 @@ class FilterBPMDetector private (
    * otherwise the last computed value is returned.
    * @return Detected track tempo in beats per minute
    **/
-  def bpm() : Int = {
+  override def bpm() : Double = {
 
     if (_bpm == -1) {
       computePeaks();

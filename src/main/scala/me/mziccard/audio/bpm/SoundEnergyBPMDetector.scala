@@ -44,10 +44,15 @@ class SoundEnergyBPMDetector private (
   private var beatCounter : Int = 0;
 
   /**
+   * The tempo in beats-per-minute computed for the track
+   **/
+  var _bpm : Double = -1.0;
+
+  /**
    * Array of instantaneous BPM values collected in the track
    * could be used to extract an overall BPM as the median/maximum/minimum
    **/
-  private var instantBpm = ArrayBuffer[Int]()
+  private var instantBpm = ArrayBuffer[Double]()
 
   private def averageLocalEnergy() : Double = {
     var energySum : Double = 0;
@@ -70,80 +75,66 @@ class SoundEnergyBPMDetector private (
       SoundEnergyBPMDetector.C_MULTIPLIER * variance;
   }
 
-  private def instantBpmMedian() : Option[Int] = {
-    instantBpm.sortWith((a : Int, b : Int) => a < b);
-    if (instantBpm.size > 0)
-      return Some(instantBpm(instantBpm.size/2));
-    else 
-      return None;   
-  }
-
-  def bpm() : Int = {
-
-    var localBlockCounter : Int = 0;
-    var localPeakCounter : Int = 0;
-    var localBeatCounter : Int = 0;
-    var readFrames : Int = 
-      audioFile.readNormalizedFrames(blockBuffer, samplesPerBlock);
- 
-    while(readFrames != 0) {
-      if (readFrames == samplesPerBlock) {
-        var energy : Double = 0;
-        var i = 0;
-        while (i < samplesPerBlock) {
-          energy = energy + 
-            blockBuffer(2*i) * blockBuffer(2*i) +
-            blockBuffer(2*i+1) * blockBuffer(2*i+1);
-          i = i + 1;
-        }
-        energyBuffer(energyBufferPointer) = energy;
-        energyBufferPointer = (energyBufferPointer + 1) % blocksPerSecond;
-        blockCounter = blockCounter + 1;
-        localBlockCounter = localBlockCounter + 1;
-
-        if (blockCounter > blocksPerSecond) {
-          val average = averageLocalEnergy();
-          val variance = energyVariance(average);
-
-          val Cparameter = C(variance);
-          val soil = Cparameter*average;
-          
-          if (energy > soil) {
-            localPeakCounter = localPeakCounter + 1;
-            if (localPeakCounter == 4) {
-              localPeakCounter = 0;
-              localBeatCounter = localBeatCounter + 1;
-              beatCounter = beatCounter + 1;
-            }
-          } else {
-            localPeakCounter = 0;
-          }
-
-          if (localBlockCounter > audioFile.sampleRate.toInt * 5 / samplesPerBlock) {
-            val beatsPerMinute : Long = 
-              (localBeatCounter * audioFile.sampleRate * 60) / (localBlockCounter * samplesPerBlock);
-            
-            instantBpm += beatsPerMinute.toInt
-
-            println("Instant BeatsPerMinute " + beatsPerMinute);
-            localBeatCounter = 0;
-            localBlockCounter = 0;
-          }
-
-        }
-      }
-      readFrames =
+  def bpm() : Double = {
+    if (_bpm == -1.0) {
+      var localBlockCounter : Int = 0;
+      var localPeakCounter : Int = 0;
+      var localBeatCounter : Int = 0;
+      var readFrames : Int = 
         audioFile.readNormalizedFrames(blockBuffer, samplesPerBlock);
-    } 
+   
+      while(readFrames != 0) {
+        if (readFrames == samplesPerBlock) {
+          var energy : Double = 0;
+          var i = 0;
+          while (i < samplesPerBlock) {
+            energy = energy + 
+              blockBuffer(2*i) * blockBuffer(2*i) +
+              blockBuffer(2*i+1) * blockBuffer(2*i+1);
+            i = i + 1;
+          }
+          energyBuffer(energyBufferPointer) = energy;
+          energyBufferPointer = (energyBufferPointer + 1) % blocksPerSecond;
+          blockCounter = blockCounter + 1;
+          localBlockCounter = localBlockCounter + 1;
 
-    instantBpmMedian match {
-      case Some(median) => println("Median BPM: " + median);
-      case None => println("Not enough information to compute median");
+          if (blockCounter > blocksPerSecond) {
+            val average = averageLocalEnergy();
+            val variance = energyVariance(average);
+
+            val Cparameter = C(variance);
+            val soil = Cparameter*average;
+            
+            if (energy > soil) {
+              localPeakCounter = localPeakCounter + 1;
+              if (localPeakCounter == 4) {
+                localPeakCounter = 0;
+                localBeatCounter = localBeatCounter + 1;
+                beatCounter = beatCounter + 1;
+              }
+            } else {
+              localPeakCounter = 0;
+            }
+
+            if (localBlockCounter > audioFile.sampleRate.toInt * 5 / samplesPerBlock) {
+              val beatsPerMinute : Double = 
+                (localBeatCounter * audioFile.sampleRate * 60).toDouble / (localBlockCounter * samplesPerBlock);
+              
+              instantBpm += beatsPerMinute
+
+              localBeatCounter = 0;
+              localBlockCounter = 0;
+            }
+
+          }
+        }
+        readFrames =
+          audioFile.readNormalizedFrames(blockBuffer, samplesPerBlock);
+      }
+      _bpm = (beatCounter * audioFile.sampleRate * 60).toDouble / (blockCounter * samplesPerBlock)
     }
-    return ((beatCounter * audioFile.sampleRate * 60) / (blockCounter * samplesPerBlock)).toInt;
+    return _bpm
   }
-
-
 
 }
 
@@ -151,7 +142,7 @@ object SoundEnergyBPMDetector {
 
   val SAMPLES_PER_BLOCK = 1024
 
-  val C_MULTIPLIER = -0.0000015;
+  val C_MULTIPLIER = -0.0000075;
   val C_ADDER = 1.5142857;
 
   def apply(audioFile : AudioFile) : SoundEnergyBPMDetector = {
