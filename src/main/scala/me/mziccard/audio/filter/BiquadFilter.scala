@@ -49,8 +49,6 @@ class BiquadFilter private (
     }
   }
 
-  println(toString)
-
   override def toString = {
     "a0: %f\na1: %f\na2: %f\nb0: %f\nb1: %f\nb2: %f"
       .format(a0, a1, a2, b0, b1, b2)
