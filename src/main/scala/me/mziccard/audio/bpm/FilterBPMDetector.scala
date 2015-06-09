@@ -59,13 +59,13 @@ class FilterBPMDetector private (
   private var nextFrame = 0;
 
   /**
-   * Buffer to store frames yet to be processed. 
+   * Buffer to store frames to be processed. 
    * The buffer is of size <code>bufferSize</code>
    **/
   private val inputBuffer = new Array[Double](bufferSize);
 
   /**
-   * Number of the frames in the track that hold a peak
+   * List of peak points in the track
    **/
   var peaks = ArrayBuffer[Int]();
 
