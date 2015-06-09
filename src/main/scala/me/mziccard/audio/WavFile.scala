@@ -305,7 +305,41 @@ class WavFile private () extends AudioFile {
       for (c <- 0 until numChannels) {
         val sample = readSample
         //System.out.println("(" + math.abs(sample) + " - " + unsignedToSigned + ")/"+(maxSignedPCMValue.toDouble));
-        sampleBuffer(index) = math.abs(math.abs(sample) - unsignedToSigned).toDouble / maxSignedPCMValue.toDouble;
+        sampleBuffer(index) = Math.abs(Math.abs(sample) - unsignedToSigned).toDouble / maxSignedPCMValue.toDouble;
+        index = index + 1;
+      }
+
+      frameCounter = frameCounter + 1;
+    }
+
+    return numFramesToRead;
+  }
+
+  /**
+   * Read frames values
+   * @param sampleBuffer Buffer where to put frames
+   * @param numFramesToRead Number of frames to read
+   * @return The number of frames read
+   **/
+  override def readFrames(sampleBuffer : Array[Int], numFramesToRead : Int) : Int = {
+    return readFrames(sampleBuffer, 0, numFramesToRead);
+  }
+
+  /**
+   * Read frames values
+   * @param sampleBuffer Buffer where to put frames
+   * @param offset Offset inside sampleBuffer where to start writing frames
+   * @param numFramesToRead Number of frames to read
+   * @return The number of frames read
+   **/
+  override def readFrames(sampleBuffer : Array[Int], offset : Int, numFramesToRead : Int) : Int = {
+    var index = offset;
+    for (f <- 0 until numFramesToRead) {
+      if (frameCounter == numFrames) return f;
+
+      for (c <- 0 until numChannels) {
+        val sample = readSample
+        sampleBuffer(index) = sample.toInt
         index = index + 1;
       }
 

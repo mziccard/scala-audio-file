@@ -68,6 +68,23 @@ trait AudioFile {
    * @return The number of frames read
    **/
   def readNormalizedFrames(sampleBuffer : Array[Double], numFramesToRead : Int) : Int;
+
+  /**
+   * Read frames values
+   * @param sampleBuffer Buffer where to put frames
+   * @param numFramesToRead Number of frames to read
+   * @return The number of frames read
+   **/
+  def readFrames(sampleBuffer : Array[Int], numFramesToRead : Int) : Int;
+
+  /**
+   * Read frames values
+   * @param sampleBuffer Buffer where to put frames
+   * @param offset Offset inside sampleBuffer where to start writing frames
+   * @param numFramesToRead Number of frames to read
+   * @return The number of frames read
+   **/
+  def readFrames(sampleBuffer : Array[Int], offset : Int, numFramesToRead : Int) : Int;
   
   /**
    * Close the audio file
