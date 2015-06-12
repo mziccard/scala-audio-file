@@ -8,6 +8,16 @@ This library allows to:
 - Compute a normalized waveform 
 - Detect audio tempo in beats per minute
 
+## Cloning the library
+The library uses (JWave)[https://github.com/cscheiblich/jwave] 
+and adds it as a git submodule in `lib/jwave`. 
+To have a working copy of the library, after cloning the repository 
+you need to init and update the submodules. 
+```scala
+git submodule init
+git submodule update
+```
+
 ## Configuring sbt
 The scala audio library can be included into you sbt project as:
 ```scala
