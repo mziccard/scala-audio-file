@@ -9,11 +9,11 @@ This library allows to:
 - Detect audio tempo in beats per minute
 
 ## Cloning the library
-The library uses (JWave)[https://github.com/cscheiblich/jwave] 
+The library uses [JWave](https://github.com/cscheiblich/jwave)
 and adds it as a git submodule in `lib/jwave`. 
 To have a working copy of the library, after cloning the repository 
 you need to init and update the submodules. 
-```scala
+```bash
 git submodule init
 git submodule update
 ```
