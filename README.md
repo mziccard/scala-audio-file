@@ -16,18 +16,24 @@ libraryDependencies ++= Seq("me.mziccard" %% "scala-audio-file" % "0.1")
 ```
 All releases are pushed to the maven repository.
 Latest release is:
-- scala-audio-file v0.1 compatible with Scala 2.10 and Scala 2.11
+- scala-audio-file v0.2 compatible with Scala 2.10 and Scala 2.11
 
 ## Library
 A WAVE file can be opened via the `WavFile` class. The class has 
 private constructor and cannot be directly istantiated, use the 
 companion object instead. `WavFile` provides several functionalites 
 to access audio data and metadata.  
-Audio samples can be as floating point values in the interval [0,1].
+Audio samples can be read as floating point values in the interval [0,1].
 ```scala
 val audioFile = WavFile("filename.wav");
 val readBuffer = new Array[Double](1024*audioFile.numChannels);
-audioFile.readNormalizedFrames(readBuffer, 1024);
+val framesRead = audioFile.readNormalizedFrames(readBuffer, 1024);
+```
+or as integer values.
+```
+val audioFile = WavFile("filename.wav");
+val readBuffer = new Array[Double](1024*audioFile.numChannels);
+val framesRead = audioFile.readFrames(readBuffer, 1024);
 ```
 
 ### Computing waveform
@@ -44,7 +50,7 @@ var waveformJSON = Waveform.formatToJson(waveform.getWaveform(512), 2);
 as a JSON array with a controlled amount of decimal digits.
 
 ### Computing beats per minute
-Two classes are available to compute audio file tempo in bpm. Both 
+Three classes are available to compute audio file tempo in bpm. Both 
 classes implement the `BPMDetector` trait.
 ```scala
 trait BPMDetector {
@@ -78,5 +84,22 @@ More complex factory methods are also available in `FilterBPMDetector`
 that allow more fine-grained configuration.
 For more details on the algorithm implemented by `FilterBPMDetector` 
 you can have a look at Beatport's 
-[blog](http://tech.beatport.com/2014/web-audio/beat-detection-using-web-audio/).
+[blog](http://tech.beatport.com/2014/web-audio/beat-detection-using-web-audio/).  
 
+The class `WaveletBPMDetector` applies a more precise algorithm 
+(described in this [paper](http://soundlab.cs.princeton.edu/publications/2001_amta_aadwt.pdf))
+based on the Discrete Wavelet Transform (DWT). The algorithm operates on windows 
+of frames so the class can be istantiated by providing an audio file, the 
+size of a window in number of frames and the type of wavelet.
+```scala
+val audioFile = WavFile("filename.wav")
+val tempo = WaveletBPMDetector(
+              audioFile, 
+              131072, 
+              WaveletBPMDetector.Daubechies4).bpm
+```
+So far only Haar and Daubechies4 wavelets are supported. 
+Due to the way DWT is implemented the size of a window must be a power of 2. 
+An additional integer parameter can be given to the factory method 
+providing the maximum number of windows to process. If not specified 
+the entire track is processed.
