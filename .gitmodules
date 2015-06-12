@@ -1,0 +1,3 @@
+[submodule "lib/jwave"]
+	path = lib/jwave
+	url = https://github.com/cscheiblich/JWave.git
