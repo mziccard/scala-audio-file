@@ -48,7 +48,7 @@ Two classes are available to compute audio file tempo in bpm. Both
 classes implement the `BPMDetector` trait.
 ```scala
 trait BPMDetector {
-  def bpm() : Int;
+  def bpm() : Double;
 }
 ```
 The `SoundEnergyBPMDetector` applies a simple bpm detection algorithm 
