@@ -22,7 +22,7 @@ git submodule update
 The scala audio library can be included into you sbt project as:
 ```scala
 resolvers += Resolver.bintrayRepo("mziccard", "maven")
-libraryDependencies ++= Seq("me.mziccard" %% "scala-audio-file" % "0.1")
+libraryDependencies ++= Seq("me.mziccard" %% "scala-audio-file" % "0.2")
 ```
 All releases are pushed to the maven repository.
 Latest release is:
